@@ -76,10 +76,9 @@ describe('Post controller', () => {
     });
 
     describe('update', () => {
-        var updatePostStub;
+        let updatePostStub;
 
         beforeEach(() => {
-            // fresh response spies/stubs each test
             res = {
                 json: sinon.spy(),
                 status: sinon.stub().returns({ end: sinon.spy() })
@@ -87,8 +86,9 @@ describe('Post controller', () => {
         });
 
         afterEach(() => {
-            // clean up stub
-            updatePostStub.restore();
+            if (updatePostStub && updatePostStub.restore) {
+                updatePostStub.restore();
+            }
         });
 
         it('should update a post and return the updated object', () => {
@@ -98,7 +98,7 @@ describe('Post controller', () => {
                 author: req.body.author,
                 title: 'Updated title',
                 content: req.body.content,
-                id
+                _id: id
             };
             updatePostStub = sinon.stub(PostModel, 'updatePost').yields(null, updated);
 
@@ -124,6 +124,8 @@ describe('Post controller', () => {
             sinon.assert.calledOnce(res.status(500).end);
         });
     });
+
+
 
     describe('findPost', () => {
 
