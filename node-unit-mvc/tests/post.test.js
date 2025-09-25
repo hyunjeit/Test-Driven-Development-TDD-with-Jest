@@ -76,7 +76,53 @@ describe('Post controller', () => {
     });
 
     describe('update', () => {
+        var updatePostStub;
 
+        beforeEach(() => {
+            // fresh response spies/stubs each test
+            res = {
+                json: sinon.spy(),
+                status: sinon.stub().returns({ end: sinon.spy() })
+            };
+        });
+
+        afterEach(() => {
+            // clean up stub
+            updatePostStub.restore();
+        });
+
+        it('should update a post and return the updated object', () => {
+            // Arrange
+            const id = 'post-123';
+            const updated = {
+                author: req.body.author,
+                title: 'Updated title',
+                content: req.body.content,
+                id
+            };
+            updatePostStub = sinon.stub(PostModel, 'updatePost').yields(null, updated);
+
+            // Act
+            PostController.update({ params: { id }, body: req.body }, res);
+
+            // Assert
+            sinon.assert.calledWith(PostModel.updatePost, id, req.body);
+            sinon.assert.calledWith(res.json, updated);
+        });
+
+        it('should return status 500 on server error', () => {
+            // Arrange
+            const id = 'post-123';
+            updatePostStub = sinon.stub(PostModel, 'updatePost').yields(error);
+
+            // Act
+            PostController.update({ params: { id }, body: req.body }, res);
+
+            // Assert
+            sinon.assert.calledWith(PostModel.updatePost, id, req.body);
+            sinon.assert.calledWith(res.status, 500);
+            sinon.assert.calledOnce(res.status(500).end);
+        });
     });
 
     describe('findPost', () => {
