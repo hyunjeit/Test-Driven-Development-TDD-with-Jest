@@ -57,7 +57,6 @@ describe('Post controller', () => {
         });
 
 
-        // Error Scenario
         it('should return status 500 on server error', () => {
 
             createPostStub = sinon.stub(PostModel, 'createPost').yields(error);
@@ -116,6 +115,8 @@ describe('Post controller', () => {
         });
     });
 
+
+
     describe('findPost', () => {
         let findPostStub;
 
@@ -134,45 +135,46 @@ describe('Post controller', () => {
 
         it('should find and return a post by id', () => {
 
-            const id = 'post-123';
-            const expectedPost = {
-                _id: id,
-                title: 'Test Post',
-                content: 'Test Content',
-                author: 'stswenguser',
-                date: Date.now()
-            };
-            findPostStub = sinon.stub(PostModel, 'findPost').yields(null, expectedPost);
+        describe('findPost', () => {
+                const id = 'post-123';
+                const expectedPost = {
+                    _id: id,
+                    title: 'Test Post',
+                    content: 'Test Content',
+                    author: 'stswenguser',
+                    date: Date.now()
+                };
+                findPostStub = sinon.stub(PostModel, 'findPost').yields(null, expectedPost);
 
-            PostController.findPost({ params: { id } }, res);
+                PostController.findPost({ params: { id } }, res);
 
-            sinon.assert.calledWith(PostModel.findPost, id);
-            sinon.assert.calledWith(res.json, expectedPost);
+                sinon.assert.calledWith(PostModel.findPost, id);
+                sinon.assert.calledWith(res.json, expectedPost);
+            });
+
+            it('should return 404 when post is not found', () => {
+
+                const id = 'nonexistent-123';
+                findPostStub = sinon.stub(PostModel, 'findPost').yields(null, null);
+
+                PostController.findPost({ params: { id } }, res);
+
+                sinon.assert.calledWith(PostModel.findPost, id);
+                sinon.assert.calledWith(res.status, 404);
+                sinon.assert.calledOnce(res.status(404).end);
+            });
+
+            it('should return 500 on server error', () => {
+
+                const id = 'post-123';
+                findPostStub = sinon.stub(PostModel, 'findPost').yields(error);
+
+                PostController.findPost({ params: { id } }, res);
+
+                sinon.assert.calledWith(PostModel.findPost, id);
+                sinon.assert.calledWith(res.status, 500);
+                sinon.assert.calledOnce(res.status(500).end);
+            });
         });
-
-        it('should return 404 when post is not found', () => {
-
-            const id = 'nonexistent-123';
-            findPostStub = sinon.stub(PostModel, 'findPost').yields(null, null);
-
-            PostController.findPost({ params: { id } }, res);
-
-            sinon.assert.calledWith(PostModel.findPost, id);
-            sinon.assert.calledWith(res.status, 404);
-            sinon.assert.calledOnce(res.status(404).end);
-        });
-
-        it('should return 500 on server error', () => {
-
-            const id = 'post-123';
-            findPostStub = sinon.stub(PostModel, 'findPost').yields(error);
-
-            PostController.findPost({ params: { id } }, res);
-
-            sinon.assert.calledWith(PostModel.findPost, id);
-            sinon.assert.calledWith(res.status, 500);
-            sinon.assert.calledOnce(res.status(500).end);
-        });
-    });
-
+    })    
 });
