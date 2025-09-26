@@ -115,8 +115,6 @@ describe('Post controller', () => {
         });
     });
 
-
-
     describe('findPost', () => {
         let findPostStub;
 
@@ -176,5 +174,69 @@ describe('Post controller', () => {
                 sinon.assert.calledOnce(res.status(500).end);
             });
         });
-    })    
+    });
+
+    describe('getAllPosts', () => {
+        let getAllPostsStub;
+
+        beforeEach(() => {
+            res = {
+                json: sinon.spy(),
+                status: sinon.stub().returns({ end: sinon.spy() })
+            };
+        });
+
+        afterEach(() => {
+            if (getAllPostsStub && getAllPostsStub.restore) {
+                getAllPostsStub.restore();
+            }
+        });
+
+        it('should return all posts', () => {
+            const expectedPosts = [
+                {
+                    _id: 'post-123',
+                    title: 'First Post',
+                    content: 'First content',
+                    author: 'user1',
+                    date: Date.now()
+                },
+                {
+                    _id: 'post-456',
+                    title: 'Second Post',
+                    content: 'Second content',
+                    author: 'user2',
+                    date: Date.now()
+                }
+            ];
+
+            getAllPostsStub = sinon.stub(PostModel, 'getAllPosts').yields(null, expectedPosts);
+
+            PostController.getAllPosts(req, res);
+
+            sinon.assert.calledWith(PostModel.getAllPosts);
+            sinon.assert.calledWith(res.json, expectedPosts);
+        });
+
+        it('should return empty array when no posts exist', () => {
+            const emptyPosts = [];
+
+            getAllPostsStub = sinon.stub(PostModel, 'getAllPosts').yields(null, emptyPosts);
+
+            PostController.getAllPosts(req, res);
+
+            sinon.assert.calledWith(PostModel.getAllPosts);
+            sinon.assert.calledWith(res.json, emptyPosts);
+        });
+
+        it('should return status 500 on server error', () => {
+            getAllPostsStub = sinon.stub(PostModel, 'getAllPosts').yields(error);
+
+            PostController.getAllPosts(req, res);
+
+            sinon.assert.calledWith(PostModel.getAllPosts);
+            sinon.assert.calledWith(res.status, 500);
+            sinon.assert.calledOnce(res.status(500).end);
+        });
+    });
 });
