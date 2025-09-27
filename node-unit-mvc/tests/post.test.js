@@ -132,6 +132,7 @@ describe('Post controller', () => {
         });
 
         it('should find and return a post by id', () => {
+
             const id = 'post-123';
             const expectedPost = {
                 _id: id,
@@ -247,7 +248,8 @@ describe('Post controller', () => {
         beforeEach(() => {
             res = {
                 json: sinon.spy(),
-                status: sinon.stub().returns({ end: sinon.spy() })
+                end: sinon.spy(),
+                status: sinon.stub().returnsThis() 
             };
         });
 
@@ -290,6 +292,68 @@ describe('Post controller', () => {
 
             sinon.assert.calledWith(PostModel.deletePost, req.params.id);
 
+            sinon.assert.calledWith(res.status, 500);
+            sinon.assert.calledOnce(res.status(500).end);
+        });
+    });
+
+    describe('like', () => {
+        var likePostStub;
+        let req = { params: { id: 'post-123' } }; 
+        let res = {};
+
+        let error = new Error({ error: 'Some error message' });
+
+        beforeEach(() => {
+            res = {
+                json: sinon.spy(),
+                status: sinon.stub().returns({ end: sinon.spy() })
+            };
+        });
+
+        afterEach(() => {
+            if (likePostStub && likePostStub.restore) {
+                likePostStub.restore();
+            }
+        });
+
+        it('should return the updated post object and a message "Post successfully liked"', () => {
+            const expectedResult = {
+                _id: 'post-123',
+                title: 'My first test post',
+                content: 'Random content',
+                author: 'stswenguser',
+                likes: 1,
+                date: Date.now()
+            };
+
+            likePostStub = sinon.stub(PostModel, 'likePost').yields(null, expectedResult);
+
+            PostController.like(req, res);
+
+            sinon.assert.calledWith(PostModel.likePost, req.params.id);
+            sinon.assert.calledWith(res.json, sinon.match({
+                message: 'Post successfully liked',
+                likes: expectedResult.likes
+            }));
+        });
+
+        it('should return status 404 if the post was not found', () => {
+            likePostStub = sinon.stub(PostModel, 'likePost').yields(null, null);
+
+            PostController.like(req, res);
+
+            sinon.assert.calledWith(PostModel.likePost, req.params.id);
+            sinon.assert.calledWith(res.status, 404);
+            sinon.assert.calledOnce(res.status(404).end);
+        });
+
+        it('should return status 500 on server error', () => {
+            likePostStub = sinon.stub(PostModel, 'likePost').yields(error);
+
+            PostController.like(req, res);
+
+            sinon.assert.calledWith(PostModel.likePost, req.params.id);
             sinon.assert.calledWith(res.status, 500);
             sinon.assert.calledOnce(res.status(500).end);
         });

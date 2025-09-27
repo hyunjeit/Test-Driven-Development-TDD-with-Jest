@@ -50,4 +50,17 @@ PostController.getAllPosts = (req, res) => {
     });
 };
 
+PostController.delete = (req, res) => {
+    const { id } = req.params;
+    PostModel.deletePost(id, (err, result) => {
+        if (err) {
+            return res.status(500).end();
+        }
+        if (!result || result.deletedCount === 0) {
+            return res.status(404).end();
+        }
+        return res.status(200).json({message: 'Post deleted successfully'});
+    });
+};
+
 module.exports = PostController;
