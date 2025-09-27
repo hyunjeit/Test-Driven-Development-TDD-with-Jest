@@ -34,3 +34,9 @@ exports.findPost = (id, next) => {
         next(err, post);
     });
 };
+
+exports.getAllPosts = (next) => {
+    Post.find({}, function(err, posts) {
+        next(err, posts);
+    });
+};

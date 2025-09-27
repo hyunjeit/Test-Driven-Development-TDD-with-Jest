@@ -132,48 +132,45 @@ describe('Post controller', () => {
         });
 
         it('should find and return a post by id', () => {
+            const id = 'post-123';
+            const expectedPost = {
+                _id: id,
+                title: 'Test Post',
+                content: 'Test Content',
+                author: 'stswenguser',
+                date: Date.now()
+            };
+            findPostStub = sinon.stub(PostModel, 'findPost').yields(null, expectedPost);
 
-        describe('findPost', () => {
-                const id = 'post-123';
-                const expectedPost = {
-                    _id: id,
-                    title: 'Test Post',
-                    content: 'Test Content',
-                    author: 'stswenguser',
-                    date: Date.now()
-                };
-                findPostStub = sinon.stub(PostModel, 'findPost').yields(null, expectedPost);
+            PostController.findPost({ params: { id } }, res);
 
-                PostController.findPost({ params: { id } }, res);
-
-                sinon.assert.calledWith(PostModel.findPost, id);
-                sinon.assert.calledWith(res.json, expectedPost);
-            });
-
-            it('should return 404 when post is not found', () => {
-
-                const id = 'nonexistent-123';
-                findPostStub = sinon.stub(PostModel, 'findPost').yields(null, null);
-
-                PostController.findPost({ params: { id } }, res);
-
-                sinon.assert.calledWith(PostModel.findPost, id);
-                sinon.assert.calledWith(res.status, 404);
-                sinon.assert.calledOnce(res.status(404).end);
-            });
-
-            it('should return 500 on server error', () => {
-
-                const id = 'post-123';
-                findPostStub = sinon.stub(PostModel, 'findPost').yields(error);
-
-                PostController.findPost({ params: { id } }, res);
-
-                sinon.assert.calledWith(PostModel.findPost, id);
-                sinon.assert.calledWith(res.status, 500);
-                sinon.assert.calledOnce(res.status(500).end);
-            });
+            sinon.assert.calledWith(PostModel.findPost, id);
+            sinon.assert.calledWith(res.json, expectedPost);
         });
+
+        it('should return 404 when post is not found', () => {
+
+            const id = 'nonexistent-123';
+            findPostStub = sinon.stub(PostModel, 'findPost').yields(null, null);
+
+            PostController.findPost({ params: { id } }, res);
+
+            sinon.assert.calledWith(PostModel.findPost, id);
+            sinon.assert.calledWith(res.status, 404);
+            sinon.assert.calledOnce(res.status(404).end);
+        });
+
+        it('should return 500 on server error', () => {
+
+            const id = 'post-123';
+            findPostStub = sinon.stub(PostModel, 'findPost').yields(error);
+
+            PostController.findPost({ params: { id } }, res);
+
+            sinon.assert.calledWith(PostModel.findPost, id);
+            sinon.assert.calledWith(res.status, 500);
+            sinon.assert.calledOnce(res.status(500).end);
+        });        
     });
 
     describe('getAllPosts', () => {
@@ -235,6 +232,64 @@ describe('Post controller', () => {
             PostController.getAllPosts(req, res);
 
             sinon.assert.calledWith(PostModel.getAllPosts);
+            sinon.assert.calledWith(res.status, 500);
+            sinon.assert.calledOnce(res.status(500).end);
+        });
+    });
+
+    describe('deletePost', () => {
+        let deletePostStub;
+        let req = { params: { id: 'post-123' } }; 
+        let res = {};
+
+        let error = new Error({ error: 'Some error message' });
+
+        beforeEach(() => {
+            res = {
+                json: sinon.spy(),
+                status: sinon.stub().returns({ end: sinon.spy() })
+            };
+        });
+
+        afterEach(() => {
+            if (deletePostStub && deletePostStub.restore) {
+                deletePostStub.restore();
+            }
+        });
+
+        it('should return status 200 and a success message when post is deleted', () => {
+            const result = { acknowledged: true, deletedCount: 1 };
+
+            deletePostStub = sinon.stub(PostModel, 'deletePost').yields(null, result);
+
+            PostController.delete(req, res);
+
+            sinon.assert.calledWith(PostModel.deletePost, req.params.id);
+
+            sinon.assert.calledWith(res.status, 200);
+            sinon.assert.calledWith(res.json, { message: 'Post deleted successfully' });
+        });
+
+        it('should return 404 if the post was not found', () => {
+            const result = { acknowledged: true, deletedCount: 0 };
+
+            deletePostStub = sinon.stub(PostModel, 'deletePost').yields(null, result);
+
+            PostController.delete(req, res);
+
+            sinon.assert.calledWith(PostModel.deletePost, req.params.id);
+
+            sinon.assert.calledWith(res.status, 404);
+            sinon.assert.calledOnce(res.status(404).end);
+        });
+
+        it('should return status 500 on server error', () => {
+            deletePostStub = sinon.stub(PostModel, 'deletePost').yields(error);
+
+            PostController.delete(req, res);
+
+            sinon.assert.calledWith(PostModel.deletePost, req.params.id);
+
             sinon.assert.calledWith(res.status, 500);
             sinon.assert.calledOnce(res.status(500).end);
         });
