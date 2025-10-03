@@ -1,0 +1,15 @@
+f5ec62c feat: likePost
+6e85a07 feat: add likePost feature
+d33c505 fix: deletePost test passed && feat: add likePost unit tests
+93b1531 feat: add deletePost unit tests
+7709561 feat: add getAllPosts unit tests
+b24015c Merge branch 'main' of https://github.com/hyunjeit/Test-Driven-Development-TDD-with-Jest
+49eb871 fix: findPost passed
+35bcc01 add initial failcase for findPost
+83aa89f Revert "add initial fail case for findPost"
+9255e2f add initial fail case for findPost
+f7944a1 fix: fix errors
+b20b84f added failing test for update function
+0233a2e fixed connection string to mock database and added the coverage for jest
+0ebff19 used npm install -g jest and npm install
+a3161ed Added source files
