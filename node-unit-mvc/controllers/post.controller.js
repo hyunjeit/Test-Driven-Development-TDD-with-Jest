@@ -68,6 +68,11 @@ PostController.like = (req, res) => {
   PostModel.likePost(id, (err, updatedPost) => {
     if (err) return res.status(500).end();
     if (!updatedPost) return res.status(404).end();
+
+    return res.json({
+      message: "Post successfully liked",
+      likes: updatedPost.likes
+    });
   });
 };
 

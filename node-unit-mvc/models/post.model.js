@@ -49,4 +49,14 @@ exports.deletePost = (id, next) => {
 exports.likePost = (id, next) => {
   if (id === "error") return next(new Error("Server error"));
   if (id === "notfound") return next(null, null);
+
+  Post.findByIdAndUpdate(
+    id,
+    { $inc: { likes: 1 } },   
+    { new: true },             
+    (err, updatedPost) => {
+      next(err, updatedPost);
+    }
+  );
 };
+
